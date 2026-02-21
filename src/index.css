@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/*
+ * GeoQuest — Global Styles & Design Tokens
+ * Using Tailwind CSS v4 @import syntax.
+ */
+
+/* ── Base layer resets ──────────────────────────────────── */
+@layer base {
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #0f172a;
+    /* slate-900 */
+    color: #f8fafc;
+    /* slate-50 */
+  }
+}
