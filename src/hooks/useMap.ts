@@ -42,6 +42,7 @@ export function useMap() {
             map.on('load', () => {
 
                 // Capture original map styling to restore properly
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const originalCountryFillColor = (map.getPaintProperty(COUNTRY_LAYER_ID, 'fill-color') as string | any[]) || 'rgba(255, 255, 255, 0)';
 
                 // Subscribe to store for map manipulations
@@ -51,7 +52,7 @@ export function useMap() {
                         if (state.currentTarget) {
                             const bbox = COUNTRY_BBOXES[state.currentTarget];
                             if (bbox) {
-                                map.fitBounds(bbox, { padding: 40, duration: 2000 });
+                                map.fitBounds(bbox, { padding: 40, duration: 2000, essential: true });
 
                                 // Update the point source for the question mark
                                 const centerLng = (bbox[0] + bbox[2]) / 2;
@@ -85,7 +86,7 @@ export function useMap() {
 
                     // 2. Pan out slightly on reveal
                     if (state.isRevealing && !prevState.isRevealing) {
-                        map.easeTo({ zoom: map.getZoom() - 1, duration: 1000 });
+                        map.easeTo({ zoom: map.getZoom() - 1, duration: 1000, essential: true });
                     }
 
                     // 3. Toggle text labels visibility
@@ -138,11 +139,11 @@ export function useMap() {
                     if (targetChanged || modeChanged || revealChanged || selectedChanged) {
                         try {
                             if (state.gameMode !== 'explore' && state.currentTarget) {
-                                // Default fallback color: Explore mode uses transparent. Quiz mode uses grey. Correct answer restores transparent.
-                                const fallbackColor = state.isRevealing ? originalCountryFillColor : '#d1d5db';
+                                // Default fallback color: Explore mode uses transparent (green underneath). Quiz mode uses dark forest green `#064e3b`. Correct answer restores base green.
+                                const fallbackColor = state.isRevealing ? originalCountryFillColor : '#064e3b';
 
-                                // Default color is yellow, green if correct reveal
-                                const targetColor = state.isRevealing ? '#22c55e' : '#facc15';
+                                // Default color is yellow, cyan if correct reveal
+                                const targetColor = state.isRevealing ? '#06b6d4' : '#facc15';
 
                                 // Color mapping setup
                                 const colorMapping = [
@@ -157,7 +158,7 @@ export function useMap() {
                                 // Push the selected incorrect country if any
                                 if (state.selectedCountry && !state.isRevealing && state.selectedCountry !== state.currentTarget) {
                                     colorMapping.push(state.selectedCountry);
-                                    colorMapping.push('#ef4444'); // Red if incorrect
+                                    colorMapping.push('#fb7185'); // Rose if incorrect
                                 }
 
                                 // Default fallback color
@@ -237,7 +238,7 @@ export function useMap() {
                                 ['get', 'name'],
                                 initialState.currentTarget,
                                 '#facc15', // Yellow for target
-                                '#d1d5db' // Grey for others initially
+                                '#064e3b' // Dark green for others initially
                             ]);
                             map.setLayoutProperty('target-question-mark', 'visibility', 'visible');
 
@@ -265,8 +266,34 @@ export function useMap() {
                         console.warn('Could not initialize country layer styles', e);
                     }
                 }
+
+                // Add map click interaction for Explore mode
+                map.on('click', COUNTRY_LAYER_ID, (e) => {
+                    const state = useGameStore.getState();
+                    if (state.gameMode === 'explore' && e.features && e.features.length > 0) {
+                        const feature = e.features[0];
+                        const countryName = feature.properties?.NAME || feature.properties?.name;
+                        if (countryName) {
+                            state.actions.setExploreCountry(countryName);
+                        }
+                    }
+                });
+
+                // Change cursor to pointer when hovering over countries in explore mode
+                map.on('mouseenter', COUNTRY_LAYER_ID, () => {
+                    const state = useGameStore.getState();
+                    if (state.gameMode === 'explore') {
+                        map.getCanvas().style.cursor = 'pointer';
+                    }
+                });
+
+                map.on('mouseleave', COUNTRY_LAYER_ID, () => {
+                    map.getCanvas().style.cursor = '';
+                });
+
             });
         } catch (err) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setError(
                 err instanceof Error ? err.message : 'Failed to initialize map'
             );

@@ -3,6 +3,9 @@ import type { MapCoordinates } from '@/types';
 // We replaced the online MAP_STYLE_URL with an entirely offline local Style Object
 export const MAP_STYLE = {
     version: 8,
+    projection: {
+        type: 'globe'
+    },
     sources: {
         'countries-data': {
             type: 'geojson',
@@ -18,7 +21,7 @@ export const MAP_STYLE = {
             id: 'background',
             type: 'background',
             paint: {
-                'background-color': '#0f172a' // Dark slate background for oceans
+                'background-color': '#082f49' // Deep ocean blue
             }
         },
         {
@@ -26,8 +29,8 @@ export const MAP_STYLE = {
             type: 'fill',
             source: 'countries-data',
             paint: {
-                'fill-color': '#d1d5db',
-                'fill-outline-color': '#64748b'
+                'fill-color': '#10b981', // Vibrant emerald green
+                'fill-outline-color': '#047857' // Dark emerald outline
             }
         },
         {

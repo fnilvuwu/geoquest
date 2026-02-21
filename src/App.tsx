@@ -2,7 +2,8 @@ import { ErrorBoundary } from '@/components/atoms/ErrorBoundary';
 import { GameUI } from '@/components/molecules/GameUI';
 import { MapContainer } from '@/components/organisms/MapContainer';
 import { useAudio } from '@/hooks/useAudio';
-import React from 'react';
+import { useGameStore } from '@/store/useGameStore';
+import React, { useEffect } from 'react';
 
 /**
  * Root application layout.
@@ -11,6 +12,11 @@ import React from 'react';
 const AppContent: React.FC = () => {
   // Initialize audio lifecycle (cleanup on unmount)
   useAudio();
+  const fetchCountriesData = useGameStore(state => state.actions.fetchCountriesData);
+
+  useEffect(() => {
+    fetchCountriesData();
+  }, [fetchCountriesData]);
 
   return (
     <div className="relative h-full w-full">

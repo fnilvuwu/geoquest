@@ -2,8 +2,10 @@ import { CountryAutocomplete } from '@/components/atoms/CountryAutocomplete';
 import { ModeSelector } from '@/components/atoms/ModeSelector';
 import { ScoreDisplay } from '@/components/atoms/ScoreDisplay';
 import { TargetIndicator } from '@/components/atoms/TargetIndicator';
+import { GameOverModal } from '@/components/molecules/GameOverModal';
+import { NationInfoPanel } from '@/components/molecules/NationInfoPanel';
 import { useGameStore } from '@/store/useGameStore';
-import { RotateCcw } from 'lucide-react';
+import { Heart, RotateCcw } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -19,10 +21,16 @@ export const GameUI: React.FC = () => {
     const quizOptions = useGameStore((state) => state.quizOptions);
     const isRevealing = useGameStore((state) => state.isRevealing);
     const isAnimating = useGameStore((state) => state.isAnimating);
-    const { setGameMode, resetGame, handleGuess } = useGameStore((state) => state.actions);
+    const hearts = useGameStore((state) => state.hearts);
+    const maxHearts = useGameStore((state) => state.maxHearts);
+    const hasStarted = useGameStore((state) => state.hasStarted);
+    const { setGameMode, resetGame, handleGuess, setMaxHearts, startGame } = useGameStore((state) => state.actions);
 
     return (
         <>
+            <NationInfoPanel />
+            <GameOverModal />
+
             {/* ─── Top Bar ─── */}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 py-3">
                 {/* Title */}
@@ -32,9 +40,19 @@ export const GameUI: React.FC = () => {
                     </h1>
                 </div>
 
-                {/* Score + Reset (hidden in explore) */}
+                {/* Score + Hearts + Reset (hidden in explore) */}
                 {gameMode !== 'explore' && (
                     <div className="pointer-events-auto flex items-center gap-3 rounded-xl bg-slate-900/70 px-4 py-2 shadow-lg backdrop-blur-md">
+                        <div className="flex gap-1 mr-2 text-red-500">
+                            {Array.from({ length: maxHearts }).map((_, i) => (
+                                <Heart
+                                    key={i}
+                                    size={16}
+                                    fill={i < hearts ? 'currentColor' : 'none'}
+                                    className={i < hearts ? '' : 'text-slate-600'}
+                                />
+                            ))}
+                        </div>
                         <ScoreDisplay score={score} />
                         <button
                             onClick={resetGame}
@@ -61,8 +79,42 @@ export const GameUI: React.FC = () => {
                     {/* Mode Selector */}
                     <ModeSelector value={gameMode} onChange={setGameMode} />
 
+                    {/* Pre-game Screen */}
+                    {gameMode !== 'explore' && !hasStarted && (
+                        <div className="mt-4 flex flex-col items-center gap-4 border-t border-slate-700/50 pt-4">
+                            <div className="text-center">
+                                <h2 className="text-lg font-bold text-white capitalize">{gameMode} Mode</h2>
+                                <p className="text-xs text-slate-400">Configure your session before starting</p>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-3 w-full">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Starting Hearts</p>
+                                <div className="flex gap-2">
+                                    {[3, 5, 10].map((h) => (
+                                        <button
+                                            key={h}
+                                            onClick={() => setMaxHearts(h)}
+                                            className={`rounded-lg px-6 py-2 text-sm font-bold transition-all ${maxHearts === h
+                                                ? 'bg-red-500/20 text-red-400 ring-1 ring-red-500/50'
+                                                : 'bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-slate-300'
+                                                }`}
+                                        >
+                                            {h} ❤️
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={startGame}
+                                    className="mt-2 w-full rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-cyan-500 shadow-lg shadow-cyan-900/20"
+                                >
+                                    Start Game
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Quiz Options */}
-                    {gameMode === 'quiz' && quizOptions.length > 0 && (
+                    {gameMode === 'quiz' && hasStarted && quizOptions.length > 0 && (
                         <div className="flex flex-col gap-2">
                             <p className="text-center text-sm font-semibold text-slate-300">
                                 What country is this?
@@ -104,7 +156,7 @@ export const GameUI: React.FC = () => {
                     )}
 
                     {/* Essay Mode Input */}
-                    {gameMode === 'essay' && (
+                    {gameMode === 'essay' && hasStarted && (
                         <CountryAutocomplete
                             onSubmit={handleGuess}
                             disabled={isRevealing || isAnimating}

@@ -1,3 +1,4 @@
+import { useGameStore } from '@/store/useGameStore';
 import { QUIZ_COUNTRIES } from '@/utils/countryUtils';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -8,24 +9,13 @@ interface CountryAutocompleteProps {
 
 export const CountryAutocomplete: React.FC<CountryAutocompleteProps> = ({ onSubmit, disabled }) => {
     const [inputValue, setInputValue] = useState('');
-    const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const countriesData = useGameStore((state) => state.countriesData);
 
-    // Filter suggestions based on input
-    useEffect(() => {
-        if (inputValue.trim()) {
-            const lowerInput = inputValue.toLowerCase();
-            const filtered = QUIZ_COUNTRIES.filter(country =>
-                country.toLowerCase().startsWith(lowerInput)
-            );
-            setSuggestions(filtered);
-            setShowSuggestions(true);
-        } else {
-            setSuggestions([]);
-            setShowSuggestions(false);
-        }
-    }, [inputValue]);
+    const suggestions = inputValue.trim()
+        ? QUIZ_COUNTRIES.filter(country => country.toLowerCase().startsWith(inputValue.toLowerCase()))
+        : [];
 
     // Close suggestions when clicking outside
     useEffect(() => {
@@ -73,7 +63,10 @@ export const CountryAutocomplete: React.FC<CountryAutocompleteProps> = ({ onSubm
                         id="country-input"
                         type="text"
                         value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
+                        onChange={(e) => {
+                            setInputValue(e.target.value);
+                            setShowSuggestions(true);
+                        }}
                         onFocus={() => { if (inputValue.trim()) setShowSuggestions(true); }}
                         disabled={disabled}
                         placeholder="e.g. France"
@@ -97,9 +90,14 @@ export const CountryAutocomplete: React.FC<CountryAutocompleteProps> = ({ onSubm
                             <button
                                 type="button"
                                 onClick={() => handleSuggestionClick(suggestion)}
-                                className="w-full px-4 py-2 text-left text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+                                className="flex w-full items-center gap-3 px-4 py-2 text-left text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
                             >
-                                {suggestion}
+                                {countriesData[suggestion]?.flags?.svg ? (
+                                    <img src={countriesData[suggestion].flags.svg} alt="" className="h-5 w-7 rounded-sm object-cover shadow-sm" />
+                                ) : (
+                                    <span className="text-xl">🌍</span>
+                                )}
+                                <span>{suggestion}</span>
                             </button>
                         </li>
                     ))}
