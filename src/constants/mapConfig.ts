@@ -1,6 +1,30 @@
 import type { MapCoordinates } from '@/types';
 
 // We replaced the online MAP_STYLE_URL with an entirely offline local Style Object
+const EXCLUDED_TERRITORIES = [
+    'Bermuda',
+    'Saint Helena',
+    'Greenland',
+    'Puerto Rico',
+    'Falkland Islands',
+    'French Guiana',
+    'New Caledonia',
+    'Guam',
+    'Macau',
+    'Hong Kong',
+    'Western Sahara',
+    'Antarctica',
+    'Faroe Islands',
+    'American Samoa',
+    'French Polynesia',
+    'Virgin Islands, U.S.',
+    'Virgin Islands, British',
+    'Cayman Islands',
+    'Turks and Caicos Islands',
+    'Northern Mariana Islands',
+    'Svalbard and Jan Mayen'
+];
+
 export const MAP_STYLE = {
     version: 8,
     projection: {
@@ -28,6 +52,7 @@ export const MAP_STYLE = {
             id: 'countries-fill',
             type: 'fill',
             source: 'countries-data',
+            filter: ['!', ['in', ['get', 'name'], ['literal', EXCLUDED_TERRITORIES]]],
             paint: {
                 'fill-color': '#10b981', // Vibrant emerald green
                 'fill-outline-color': '#047857' // Dark emerald outline
@@ -37,6 +62,7 @@ export const MAP_STYLE = {
             id: 'country-labels',
             type: 'symbol',
             source: 'country-labels-data',
+            filter: ['!', ['in', ['get', 'name'], ['literal', EXCLUDED_TERRITORIES]]],
             layout: {
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],

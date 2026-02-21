@@ -1,12 +1,17 @@
 import { useGameStore } from '@/store/useGameStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { HeartCrack, RotateCcw } from 'lucide-react';
+import { HeartCrack, RotateCcw, Trophy } from 'lucide-react';
 import React from 'react';
 
 export const GameOverModal: React.FC = () => {
     const isGameOver = useGameStore((state) => state.isGameOver);
     const score = useGameStore((state) => state.score);
+    const gameMode = useGameStore((state) => state.gameMode);
+    const highScoreQuiz = useGameStore((state) => state.highScoreQuiz);
+    const highScoreEssay = useGameStore((state) => state.highScoreEssay);
     const { resetGame } = useGameStore((state) => state.actions);
+
+    const currentHighScore = gameMode === 'quiz' ? highScoreQuiz : gameMode === 'essay' ? highScoreEssay : 0;
 
     return (
         <AnimatePresence>
@@ -26,9 +31,15 @@ export const GameOverModal: React.FC = () => {
                             <HeartCrack size={48} />
                         </div>
                         <h2 className="mb-2 text-4xl font-black text-white">Game Over</h2>
-                        <p className="mb-8 text-slate-400">
+                        <p className="mb-6 text-slate-400">
                             You ran out of hearts! Your final score is <strong className="text-2xl text-white">{score}</strong>.
                         </p>
+
+                        {currentHighScore > 0 && (
+                            <div className="mb-8 flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 font-semibold text-amber-400 shadow-inner">
+                                <Trophy size={16} /> Best <span className="capitalize">{gameMode}</span> Score: {currentHighScore}
+                            </div>
+                        )}
 
                         <button
                             onClick={resetGame}

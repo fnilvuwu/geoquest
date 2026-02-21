@@ -49,6 +49,19 @@ export const QUIZ_COUNTRIES: string[] = [
     'Chile',
     'Norway',
     'Mongolia',
+    'Vietnam',
+    'South Korea',
+    'Malaysia',
+    'Philippines',
+    'New Zealand',
+    'Ukraine',
+    'Poland',
+    'Netherlands',
+    'Greece',
+    'Portugal',
+    'Iran',
+    'Morocco',
+    'Venezuela',
 ];
 
 /**
@@ -99,6 +112,19 @@ export const COUNTRY_BBOXES: Record<string, [number, number, number, number]> = 
     'Chile': [-75.6, -56.5, -66.9, -17.5],
     'Norway': [4.6, 57.9, 31.1, 71.1],
     'Mongolia': [87.7, 41.5, 119.9, 52.1],
+    'Vietnam': [102.1, 8.5, 109.5, 23.4],
+    'South Korea': [125.0, 33.1, 131.0, 38.6],
+    'Malaysia': [99.6, 0.8, 119.3, 7.4],
+    'Philippines': [116.9, 4.5, 126.6, 21.1],
+    'New Zealand': [166.4, -47.3, 178.6, -34.4],
+    'Ukraine': [22.1, 44.3, 40.2, 52.4],
+    'Poland': [14.1, 49.0, 24.1, 54.8],
+    'Netherlands': [3.3, 50.7, 7.2, 53.6],
+    'Greece': [19.3, 34.8, 29.6, 41.8],
+    'Portugal': [-9.5, 36.9, -6.1, 42.2],
+    'Iran': [44.0, 25.0, 63.3, 39.8],
+    'Morocco': [-13.2, 27.6, -1.0, 35.9],
+    'Venezuela': [-73.4, 0.6, -59.8, 12.2],
 };
 
 /**

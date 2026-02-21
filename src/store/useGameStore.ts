@@ -17,6 +17,8 @@ export interface RestCountry {
 
 interface GameState {
     score: number;
+    highScoreQuiz: number;
+    highScoreEssay: number;
     currentTarget: string | null;
     gameMode: GameMode;
     selectedCountry: string | null;
@@ -48,8 +50,19 @@ interface GameState {
     };
 }
 
+const getStoredHighScore = (key: string) => {
+    try {
+        const stored = localStorage.getItem(key);
+        return stored ? parseInt(stored, 10) : 0;
+    } catch {
+        return 0;
+    }
+};
+
 export const useGameStore = create<GameState>()((set, get) => ({
     score: 0,
+    highScoreQuiz: getStoredHighScore('geoquest-hs-quiz'),
+    highScoreEssay: getStoredHighScore('geoquest-hs-essay'),
     currentTarget: null,
     gameMode: 'explore',
     selectedCountry: null,
@@ -138,7 +151,25 @@ export const useGameStore = create<GameState>()((set, get) => ({
         continueAfterInfo: () => {
             const state = get();
             if (state.isRevealing) {
-                set({ isRevealing: false, score: state.score + 10, showInfoPanel: null });
+                const newScore = state.score + 10;
+                let highScoreQuiz = state.highScoreQuiz;
+                let highScoreEssay = state.highScoreEssay;
+
+                if (state.gameMode === 'quiz' && newScore > highScoreQuiz) {
+                    highScoreQuiz = newScore;
+                    localStorage.setItem('geoquest-hs-quiz', newScore.toString());
+                } else if (state.gameMode === 'essay' && newScore > highScoreEssay) {
+                    highScoreEssay = newScore;
+                    localStorage.setItem('geoquest-hs-essay', newScore.toString());
+                }
+
+                set({
+                    isRevealing: false,
+                    score: newScore,
+                    highScoreQuiz,
+                    highScoreEssay,
+                    showInfoPanel: null
+                });
                 state.actions.nextTarget();
             } else {
                 set({ showInfoPanel: null });
@@ -176,8 +207,17 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
             if (countryName.toLowerCase() === state.currentTarget.toLowerCase()) {
                 audioState.actions.playSuccess();
-                // Show info panel instead of auto-advancing
-                set({ isRevealing: true, selectedCountry: countryName, showInfoPanel: countryName });
+                // Set revealing state immediately to trigger map zoom/color
+                set({ isRevealing: true, selectedCountry: countryName });
+
+                // Add a small delay before showing the info panel
+                setTimeout(() => {
+                    const currentState = get();
+                    // Double check we are still in the revealing state for this country
+                    if (currentState.isRevealing && currentState.selectedCountry === countryName) {
+                        set({ showInfoPanel: countryName });
+                    }
+                }, 1500);
             } else {
                 audioState.actions.playError();
 
